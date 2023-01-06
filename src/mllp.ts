@@ -1,3 +1,4 @@
+import { Socket } from 'dgram';
 import * as net from 'net'
 import { TypedEmitter } from 'tiny-typed-emitter';
 
@@ -56,9 +57,9 @@ export class MllpServer extends TypedEmitter<MllpEvents> {
 
         sock.on('data', (data: any) => {
             data = data.toString()
-            logger("DATA:\nfrom " + sock.remoteAddress + ':\n' + data.split("\r").join("\n"));
+            this.logger.info("DATA:\nfrom " + sock.remoteAddress + ':\n' + data.split("\r").join("\n"));
 
-            let { msg, ack } = this.handleData(data.toString())
+            this.handleData(data.toString(), sock)
         })
         sock.on('close', (data) => {
             this.logger.info('CLOSED: ' + sock.remoteAddress + ' ' + sock.remotePort);
@@ -90,7 +91,7 @@ export class MllpServer extends TypedEmitter<MllpEvents> {
         return result;
     }
 
-    private handleData(msg: string) {
+    private handleData(msg: string, sock: net.Socket) {
         //strip separators
         if (msg.indexOf(MllpServer.VT) > -1) {
             this.message = '';
@@ -111,7 +112,7 @@ export class MllpServer extends TypedEmitter<MllpEvents> {
              * @example MSH|^~\&|XXXX|C|SOMELAB|SOMELAB|20080511103530||ORU^R01|Q335939501T337311002|P|2.3|||
              */
             this.emit('hl7', this.message);
-            let ack = ackn(ackData, "AA")
+            let ack = this.ackn(ackData, "AA")
 
             sock.write(MllpServer.VT + ack + MllpServer.FS + MllpServer.CR);
         }
