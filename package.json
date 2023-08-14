@@ -48,8 +48,5 @@
   "dependencies": {
     "hl7": "1.x.x",
     "tiny-typed-emitter": "^2.1.0"
-  },
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
   }
 }
